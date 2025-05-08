@@ -3,3 +3,4 @@ const String signup = "$baseUrl/user/signup";
 const String login = "$baseUrl/user/login";
 const String biometriclogin = "$baseUrl/user/biometric-login";
 const String registerdevice = "$baseUrl/user/register-device";
+const String verifysession = "$baseUrl/verify-session";

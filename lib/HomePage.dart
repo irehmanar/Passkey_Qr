@@ -1,3 +1,4 @@
+import 'package:abb/qr_scanner_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:device_info_plus/device_info_plus.dart';
@@ -76,6 +77,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Home')),
@@ -86,12 +88,35 @@ class _HomePageState extends State<HomePage> {
             Text('Welcome, ${widget.email}'),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: deviceId.isEmpty ? null : _registerDevice,  // Disable button if deviceId is empty
+              onPressed: deviceId.isEmpty ? null : _registerDevice,
               child: Text('Register Device'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => QRScannerPage(
+                      onScanned: (scannedData) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Scanned: $scannedData')),
+                        );
+                        // You can use scannedData for login or further processing
+                      },
+                    ),
+                  ),
+                );
+              },
+              child: Text('Scan QR Code'),
             ),
           ],
         ),
       ),
     );
   }
+
+
+
+
 }

@@ -5,22 +5,27 @@ import 'package:http/http.dart' as http;
 import 'package:local_auth/local_auth.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'HomePage.dart';
 class LoginPage extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final LocalAuthentication _localAuth = LocalAuthentication(); // Biometric auth instance
 
+
+// ...
+
   Future<void> _login(BuildContext context) async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
+
     if (email.isEmpty || password.isEmpty) {
       _showAlertDialog(context, 'Incomplete Data', 'Please enter all the required fields.', false);
     } else if (password.length < 9) {
       _showAlertDialog(context, 'Invalid Password', 'Password must be at least 9 characters long.', false);
     } else {
       var data = {'email': email, 'password': password};
+
       try {
         var response = await http.post(
           Uri.parse(login),
@@ -31,17 +36,28 @@ class LoginPage extends StatelessWidget {
         var jsonResponse = jsonDecode(response.body);
 
         if (jsonResponse['success']) {
-          // _showAlertDialog(context, 'Login Successful', jsonResponse['message'], true);
+          final prefs = await SharedPreferences.getInstance();
+
+          // Extract data from response
+          String token = jsonResponse['token'];
+          String userName = jsonResponse['user']['username'];
+          String userEmail = jsonResponse['user']['email'];
+          String userId = jsonResponse['user']['userId'];
+
+          // Save to shared preferences
+          await prefs.setString('jwtToken', token);
+          await prefs.setString('userName', userName);
+          await prefs.setString('userEmail', userEmail);
+          await prefs.setString('userId', userId);
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) => HomePage(
-                // username: jsonResponse['username'],
-                email: email,
+                email: userEmail,
               ),
             ),
           );
-
         } else {
           _showAlertDialog(context, 'Login Failed', jsonResponse['message'], false);
         }

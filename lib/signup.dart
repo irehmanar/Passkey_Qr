@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'HomePage.dart';
 import 'config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -19,8 +22,7 @@ class SignupPage extends StatelessWidget {
     }
 
     if (password.length < 8) {
-      _showAlertDialog(context, 'Invalid Password', 'Password must be at '
-          'least 8 characters long.');
+      _showAlertDialog(context, 'Invalid Password', 'Password must be at least 8 characters long.');
       return;
     }
 
@@ -29,7 +31,6 @@ class SignupPage extends StatelessWidget {
       'email': email,
       'password': password
     };
-    print('data: $data');
 
     try {
       var response = await http.post(
@@ -39,12 +40,25 @@ class SignupPage extends StatelessWidget {
       );
 
       var jsonResponse = jsonDecode(response.body);
-
       print(jsonResponse);
-      if (jsonResponse["success"]) {
+
+      if (jsonResponse["success"] == true) {
+        // Save user data to SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('jwtToken', jsonResponse['token']);
+        await prefs.setString('userEmail', jsonResponse['user']['email']);
+        await prefs.setString('userName', jsonResponse['user']['username']);
+
+        // Show success dialog or redirect
         _showAlertDialog(context, 'Signup Successful', jsonResponse["message"], true);
+
+        // Optional: Navigate to home page
+        Navigator.pushReplacement(context, MaterialPageRoute(
+          builder: (context) => HomePage(email: email),
+        ));
+
       } else {
-        _showAlertDialog(context, 'Signup Failed', jsonResponse["errors"]);
+        _showAlertDialog(context, 'Signup Failed', jsonResponse["message"] ?? 'Signup failed.');
       }
     } catch (e) {
       print("Error: $e");

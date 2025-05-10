@@ -2,6 +2,7 @@ import 'package:abb/qr_scanner_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'config.dart';
@@ -47,36 +48,49 @@ class _HomePageState extends State<HomePage> {
   // Register device by sending a POST request with email and deviceId
   Future<void> _registerDevice() async {
     if (deviceId.isEmpty) {
-      // Ensure deviceId is available
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Device ID is not available')));
       return;
     }
 
-    final url = Uri.parse(registerdevice);  // Make sure 'registerdevice' is defined correctly
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('jwtToken');
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User token not found')));
+      return;
+    }
+
+    final url = Uri.parse(registerdevice); // Ensure 'registerdevice' is defined in config.dart
     print('Sending device ID: $deviceId');
 
     final response = await http.post(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
       body: jsonEncode({
         'email': widget.email,
         'deviceId': deviceId,
       }),
     );
 
+    print('POST $url');
+    print('Headers: {Content-Type: application/json, Authorization: Bearer $token}');
+    // print('Body: $body');
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       if (data['success']) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Device registered successfully')));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to register device')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Failed to register device')));
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Server error')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Server error: ${response.statusCode}')));
     }
   }
 
-  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,12 +112,12 @@ class _HomePageState extends State<HomePage> {
                   context,
                   MaterialPageRoute(
                     builder: (_) => QRScannerPage(
-                      onScanned: (scannedData) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Scanned: $scannedData')),
-                        );
+                      // onScanned: (scannedData) {
+                      //   ScaffoldMessenger.of(context).showSnackBar(
+                      //     SnackBar(content: Text('Scanned: $scannedData')),
+                      //   );
                         // You can use scannedData for login or further processing
-                      },
+                      // },
                     ),
                   ),
                 );

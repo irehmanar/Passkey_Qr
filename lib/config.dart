@@ -1,6 +1,10 @@
-const String baseUrl = "http://10.7.233.97:3001/api/v1";
-const String signup = "$baseUrl/user/signup";
-const String login = "$baseUrl/user/login";
+const String baseUrl = "http://10.7.76.45:5002/api/auth";
+const String signup = "$baseUrl/signup";
+const String login = "$baseUrl/login";
 const String biometriclogin = "$baseUrl/user/biometric-login";
-const String registerdevice = "$baseUrl/user/register-device";
-const String verifysession = "$baseUrl/verify-session";
+
+
+
+const String registerdevice = "$baseUrl/register-device";
+const String verifysession = "$baseUrl/activate-qr-session";
+

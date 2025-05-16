@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'HomePage.dart';
 import 'login.dart';
 import 'signup.dart';
 
@@ -14,7 +15,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomeScreen(),
+      debugShowCheckedModeBanner: false,
+      home: LoginPage(),
+      // home: HomePage(email: 'ab@gmail.com',),
     );
   }
 }
